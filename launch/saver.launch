@@ -1,0 +1,76 @@
+<launch>
+
+  <arg name="sensor0" default="0" />
+  
+  <!-- launch the node -->
+  <node name="saver_$(arg sensor0)" pkg="rocket_timepix" type="saver" output="screen" respawn="true">
+
+    <!-- load config from config file -->
+    <param name="directory" value="/home/odroid/DATA/sensor_$(arg sensor0)/" />
+    <remap from="~value0" to="/temperature_0/value" />
+    <remap from="~value3" to="/temperature_3/value" />
+    <!-- map the correct topix -->
+    <remap from="~image_in" to="/rospix/sensor_$(arg sensor0)/image" />
+
+  </node>
+
+  <arg name="sensor1" default="1" />
+
+  <!-- launch the node -->
+  <node name="saver_$(arg sensor1)" pkg="rocket_timepix" type="saver" output="screen" respawn="true">
+
+    <!-- load config from config file -->
+    <param name="directory" value="/home/odroid/DATA/sensor_$(arg sensor1)/" />
+
+    <!-- map the correct topix -->
+    <remap from="~image_in" to="/rospix/sensor_$(arg sensor1)/image" />
+    <remap from="~value0" to="/temperature_0/value" />
+    <remap from="~value3" to="/temperature_3/value" />
+
+  </node>
+
+  <arg name="sensor2" default="2" />
+
+  <!-- launch the node -->
+  <node name="saver_$(arg sensor2)" pkg="rocket_timepix" type="saver" output="screen" respawn="true">
+
+    <!-- load config from config file -->
+    <param name="directory" value="/home/odroid/DATA/sensor_$(arg sensor2)/" />
+
+    <!-- map the correct topix -->
+    <remap from="~image_in" to="/rospix/sensor_$(arg sensor2)/image" />
+    <remap from="~value0" to="/temperature_0/value" />
+    <remap from="~value3" to="/temperature_3/value" />
+
+  </node>
+
+  <arg name="sensor3" default="3" />
+
+  <!-- launch the node -->
+  <node name="saver_$(arg sensor3)" pkg="rocket_timepix" type="saver" output="screen" respawn="true">
+
+    <!-- load config from config file -->
+    <param name="directory" value="/home/odroid/DATA/sensor_$(arg sensor3)/" />
+
+    <!-- map the correct topix -->
+    <remap from="~image_in" to="/rospix/sensor_$(arg sensor3)/image" />
+    <remap from="~value0" to="/temperature_0/value" />
+    <remap from="~value3" to="/temperature_3/value" />
+  </node>
+
+  <arg name="sensor4" default="4" />
+
+  <!-- launch the node -->
+  <node name="saver_$(arg sensor4)" pkg="rocket_timepix" type="saver" output="screen" respawn="true">
+
+    <!-- load config from config file -->
+    <param name="directory" value="/home/odroid/DATA/sensor_$(arg sensor4)/" />
+
+    <!-- map the correct topix -->
+    <remap from="~image_in" to="/rospix/sensor_$(arg sensor4)/image" />
+    <remap from="~value0" to="/temperature_0/value" />
+    <remap from="~value3" to="/temperature_3/value" />
+  </node>
+
+
+</launch>

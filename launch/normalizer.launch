@@ -1,0 +1,63 @@
+<launch>
+
+  <!-- launch the node -->
+  <node name="normalize_0" pkg="rocket_timepix" type="normalizer" output="screen">
+
+    <!-- load config from config file -->
+    <rosparam file="$(find rocket_timepix)/config/normalizer.yaml" />
+
+    <!-- map the correct topics -->
+    <remap from="~image_in" to="/rospix/sensor_0/image" />
+    <remap from="~image_out" to="~image_out" />
+
+  </node>
+  
+  <!-- launch the node -->
+  <node name="normalize_1" pkg="rocket_timepix" type="normalizer" output="screen">
+
+    <!-- load config from config file -->
+    <rosparam file="$(find rocket_timepix)/config/normalizer.yaml" />
+
+    <!-- map the correct topics -->
+    <remap from="~image_in" to="/rospix/sensor_1/image" />
+    <remap from="~image_out" to="~image_out" />
+
+  </node>
+
+  <!-- launch the node -->
+  <node name="normalize_2" pkg="rocket_timepix" type="normalizer" output="screen">
+
+    <!-- load config from config file -->
+    <rosparam file="$(find rocket_timepix)/config/normalizer.yaml" />
+
+    <!-- map the correct topics -->
+    <remap from="~image_in" to="/rospix/sensor_2/image" />
+    <remap from="~image_out" to="~image_out" />
+
+  </node>
+
+  <!-- launch the node -->
+  <node name="normalize_3" pkg="rocket_timepix" type="normalizer" output="screen">
+
+    <!-- load config from config file -->
+    <rosparam file="$(find rocket_timepix)/config/normalizer.yaml" />
+
+    <!-- map the correct topics -->
+    <remap from="~image_in" to="/rospix/sensor_3/image" />
+    <remap from="~image_out" to="~image_out" />
+
+  </node>
+
+  <!-- launch the node -->
+  <node name="normalize_4" pkg="rocket_timepix" type="normalizer" output="screen">
+
+    <!-- load config from config file -->
+    <rosparam file="$(find rocket_timepix)/config/normalizer.yaml" />
+
+    <!-- map the correct topics -->
+    <remap from="~image_in" to="/rospix/sensor_4/image" />
+    <remap from="~image_out" to="~image_out" />
+
+  </node>
+
+</launch>
