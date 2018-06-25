@@ -1,10 +1,10 @@
 // some ros includes
-#include <ros/ros.h>
 #include <ros/package.h>
+#include <ros/ros.h>
 
 // some std includes
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 // neccessary to read the image from rospix
 #include <rospix/Image.h>
@@ -35,7 +35,7 @@ ros::ServiceClient service_exposure_time;
 ros::ServiceClient service_do_exposure;
 
 // parameters loaded from config file
-int desired_pixel_count_;
+int    desired_pixel_count_;
 double max_exposure_;
 double min_exposure_;
 double max_exposure_step_;
@@ -50,8 +50,8 @@ ros::Time last_time_image;
 bool got_image = false;
 
 // stores the desired exposure time
-double exposure;
-std::mutex mutex_exposure; // to lock it up between the threads
+double     exposure;
+std::mutex mutex_exposure;  // to lock it up between the threads
 
 // store value of previous exposure, to chech in time whether the reposnse came
 double previous_exposure = 1;
@@ -62,7 +62,7 @@ std::thread publisher_thread;
 // thread function
 void publisherThread(void) {
 
-  ros::Rate d(10); // set rate to 10Hz 
+  ros::Rate d(10);  // set rate to 10H
 
   while (ros::ok()) {
 
@@ -71,9 +71,7 @@ void publisherThread(void) {
 
     // protect the shared variable
     mutex_exposure.lock();
-    {
-      newMessage.data = exposure;
-    }
+    { newMessage.data = exposure; }
     mutex_exposure.unlock();
 
     // publish the message
@@ -86,7 +84,7 @@ void publisherThread(void) {
 // is called every time new image comes in
 void imageCallback(const rospix::ImageConstPtr& msg) {
 
-  got_image = true;
+  got_image       = true;
   last_time_image = ros::Time::now();
 
   // count the number of active pixels in the image
@@ -96,10 +94,9 @@ void imageCallback(const rospix::ImageConstPtr& msg) {
   for (int i = 0; i < 256; i++) {
     for (int j = 0; j < 256; j++) {
 
-      if (msg->image[i*256 + j] > 0) {
+      if (msg->image[i * 256 + j] > 0) {
         pixel_count++;
       }
-
     }
   }
 
@@ -109,7 +106,7 @@ void imageCallback(const rospix::ImageConstPtr& msg) {
 
     double error = double(desired_pixel_count_) - double(pixel_count);
 
-    previous_exposure = exposure;
+    previous_exposure      = exposure;
     double exposure_update = error * proportial_gain_;
 
     // saturate the exposure update
@@ -158,7 +155,8 @@ int main(int argc, char** argv) {
   nh_.param("max_exposure_step", max_exposure_step_, 0.0);
 
   // tell us we have started
-  ROS_INFO("Exposure controller started with parameters: deisred_pixel_count=%d, max_exposure=%2.2f, min_exposure=%2.2f, init_exposure=%2.2f.", desired_pixel_count_, max_exposure_, min_exposure_,  exposure);
+  ROS_INFO("Exposure controller started with parameters: deisred_pixel_count=%d, max_exposure=%2.2f, min_exposure=%2.2f, init_exposure=%2.2f.",
+           desired_pixel_count_, max_exposure_, min_exposure_, exposure);
 
   // SUBSCRIBERS
   image_subscriber = nh_.subscribe("image_in", 1, &imageCallback, ros::TransportHints().tcpNoDelay());
@@ -167,17 +165,17 @@ int main(int argc, char** argv) {
   exposure_time_publisher = nh_.advertise<std_msgs::Float64>("exposure_time", 1);
 
   // SERVICES
-  service_do_exposure = nh_.serviceClient<rospix::Exposure>("do_exposure"); // we choose some general topic name and later remap it in launch file
+  service_do_exposure   = nh_.serviceClient<rospix::Exposure>("do_exposure");  // we choose some general topic name and later remap it in launch file
   service_exposure_time = nh_.serviceClient<rospix::SetDouble>("set_exposure");
 
   // create the publisher thread
-  publisher_thread  = std::thread(&publisherThread);
+  publisher_thread = std::thread(&publisherThread);
 
   // initialize times
   last_time_image = ros::Time::now();
 
   // check whether the sensor is alive
-  ros::Rate r(10); // 10 times per second
+  ros::Rate r(10);  // 10 times per second
   while (ros::ok()) {
 
     // we are gonna touch a shared variable, protect it with mutex

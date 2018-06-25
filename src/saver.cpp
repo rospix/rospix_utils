@@ -1,14 +1,14 @@
 // some ros includes
-#include <ros/ros.h>
 #include <ros/package.h>
+#include <ros/ros.h>
 
 // some std includes
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 // Image message type is defined by the rospix node
 #include <rospix/Image.h>
-#include <std_msgs/Float64.h> 
+#include <std_msgs/Float64.h>
 
 using namespace std;
 
@@ -21,31 +21,31 @@ string directory;
 
 double temperature0, temperature3;
 
-void temp0CallBack(const std_msgs::Float64::ConstPtr& msg){
+void temp0CallBack(const std_msgs::Float64::ConstPtr& msg) {
   temperature0 = msg->data;
 }
 
- void temp3CallBack(const std_msgs::Float64::ConstPtr& msg){                                                                                                                                                             
-    temperature3 = msg->data;
+void temp3CallBack(const std_msgs::Float64::ConstPtr& msg) {
+  temperature3 = msg->data;
 }
 
 // is called every time new image comes in
 void imageCallback(const rospix::ImageConstPtr& msg) {
 
-  double date =  ros::Time::now().toSec();
+  double date = ros::Time::now().toSec();
 
   // create a filename based on current time, precision on miliseconds should be enough
   char filename[40];
   sprintf(filename, "%.3f.image.txt", date);
 
   // add the directory name
-  string path = string(directory+string(filename));
+  string path = string(directory + string(filename));
 
   // tell us about saving the image
   ROS_INFO("Saving image to %s", path.c_str());
 
   // open the file
-  FILE * f = fopen(path.c_str(), "w");
+  FILE* f = fopen(path.c_str(), "w");
 
   if (f == NULL) {
     ROS_ERROR("Cannot open the file %s for writing.", path.c_str());
@@ -56,7 +56,7 @@ void imageCallback(const rospix::ImageConstPtr& msg) {
       for (int j = 0; j < 256; j++) {
 
         // print the value
-        fprintf(f, "%d ", msg->image[i*256 + j]);
+        fprintf(f, "%d ", msg->image[i * 256 + j]);
       }
 
       fprintf(f, "\n");
@@ -70,7 +70,7 @@ void imageCallback(const rospix::ImageConstPtr& msg) {
 
   // metadata file name
   sprintf(filename, "%.3f.metadata.txt", date);
-  path = string(directory+string(filename));
+  path = string(directory + string(filename));
 
   // open metadata file
   f = fopen(path.c_str(), "w");
@@ -107,9 +107,9 @@ int main(int argc, char** argv) {
   nh_.param("directory", directory, string());
 
   // SUBSCRIBERS
-  image_subscriber = nh_.subscribe("image_in", 1, &imageCallback, ros::TransportHints().tcpNoDelay()); 
+  image_subscriber         = nh_.subscribe("image_in", 1, &imageCallback, ros::TransportHints().tcpNoDelay());
   temperature_0_subscriber = nh_.subscribe("value0", 1, &temp0CallBack, ros::TransportHints().tcpNoDelay());
-  temperature_3_subscriber = nh_.subscribe("value3", 1, &temp3CallBack, ros::TransportHints().tcpNoDelay()); 
+  temperature_3_subscriber = nh_.subscribe("value3", 1, &temp3CallBack, ros::TransportHints().tcpNoDelay());
 
 
   // needed to make stuff work
