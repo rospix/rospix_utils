@@ -3,7 +3,7 @@
   <arg name="sensor0" default="0" />
 
   <!-- launch the node -->
-  <node name="saver_$(arg sensor0)" pkg="rocket_timepix" type="saver" output="screen" respawn="true">
+  <node name="saver_$(arg sensor0)" pkg="utils" type="saver" output="screen" respawn="true">
 
     <!-- load config from config file -->
     <param name="directory" value="~/sensor_$(arg sensor0)/" />

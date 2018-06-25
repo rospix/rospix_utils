@@ -1,10 +1,10 @@
 <launch>
 
   <!-- launch the node -->
-  <node name="normalize_0" pkg="rocket_timepix" type="normalizer" output="screen">
+  <node name="normalize_0" pkg="utils" type="normalizer" output="screen">
 
     <!-- load config from config file -->
-    <rosparam file="$(find rocket_timepix)/config/normalizer.yaml" />
+    <rosparam file="$(find utils)/config/normalizer.yaml" />
 
     <!-- map the correct topics -->
     <remap from="~image_in" to="/rospix/sensor_0/image" />

@@ -1,5 +1,5 @@
 # what is the desired pixel count per exposure?
-desired_pixel_count: 200
+desired_pixel_count: 1000
 
 init_exposure: 1.0
 

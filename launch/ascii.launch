@@ -3,10 +3,10 @@
   <arg name="sensor" default="0" />
 
   <!-- launch the node -->
-  <node name="ascii_$(arg sensor)" pkg="rocket_timepix" type="ascii" output="screen">
+  <node name="ascii_$(arg sensor)" pkg="utils" type="ascii" output="screen">
 
     <!-- load config from config file -->
-    <rosparam file="$(find rocket_timepix)/config/ascii.yaml" />
+    <rosparam file="$(find utils)/config/ascii.yaml" />
 
     <!-- map the correct topix -->
     <remap from="~image_in" to="/rospix/sensor_$(arg sensor)/image" />
