@@ -1,15 +1,17 @@
 <launch>
 
-  <arg name="sensor0" default="0" />
+  <arg name="sensor" default="0" />
+
+  <arg name="home_path" default="$(optenv HOME /)"/>
 
   <!-- launch the node -->
-  <node name="saver_$(arg sensor0)" pkg="utils" type="saver" output="screen" respawn="true">
+  <node name="saver_$(arg sensor)" pkg="utils" type="saver" output="screen" respawn="true">
 
     <!-- load config from config file -->
-    <param name="directory" value="~/sensor_$(arg sensor0)/" />
+    <param name="directory" value="$(arg home_path)/sensor_$(arg sensor)/" />
 
     <!-- map the correct topics -->
-    <remap from="~image_in" to="/rospix/sensor_$(arg sensor0)/image" />
+    <remap from="~image_in" to="/rospix/sensor_$(arg sensor)/image" />
 
   </node>
 
