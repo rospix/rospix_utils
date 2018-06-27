@@ -6,7 +6,7 @@ Sample utilities for basic control of rospix and visualization of the measured d
 
 Inspecting images in the terminal is possible via the _ascii_ utility.
 
-![ascii image](misc/ascii.jpg)
+![ascii image](misc/ascii.png)
 
 # Image normalizer
 
