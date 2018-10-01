@@ -3,10 +3,10 @@
   <arg name="sensor" default="0" />
 
   <!-- launch the node -->
-  <node name="normalize_$(arg sensor)" pkg="utils" type="normalizer" output="screen">
+  <node name="normalize_$(arg sensor)" pkg="rospix_utils" type="normalizer" output="screen">
 
     <!-- load config from config file -->
-    <rosparam file="$(find utils)/config/normalizer.yaml" />
+    <rosparam file="$(find rospix_utils)/config/normalizer.yaml" />
 
     <!-- map the correct topics -->
     <remap from="~image_in" to="/rospix/sensor_$(arg sensor)/image" />

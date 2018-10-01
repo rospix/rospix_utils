@@ -3,10 +3,10 @@
   <arg name="sensor" default="0" />
 
   <!-- launch the node -->
-  <node name="exposure_control_$(arg sensor)" pkg="utils" type="controller" output="screen">
+  <node name="exposure_control_$(arg sensor)" pkg="rospix_utils" type="controller" output="screen">
 
     <!-- load config from config file -->
-    <rosparam file="$(find utils)/config/controller.yaml" />
+    <rosparam file="$(find rospix_utils)/config/controller.yaml" />
 
     <!-- map the correct topics SUBSCRIBERS -->
     <remap from="~image_in" to="/rospix/sensor_$(arg sensor)/image" />

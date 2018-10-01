@@ -5,7 +5,7 @@
   <arg name="home_path" default="$(optenv HOME /)"/>
 
   <!-- launch the node -->
-  <node name="saver_$(arg sensor)" pkg="utils" type="saver" output="screen" respawn="true">
+  <node name="saver_$(arg sensor)" pkg="rospix_utils" type="saver" output="screen" respawn="true">
 
     <!-- load config from config file -->
     <param name="directory" value="$(arg home_path)/sensor_$(arg sensor)/" />

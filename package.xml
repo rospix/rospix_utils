@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>utils</name>
+  <name>rospix_utils</name>
   <version>1.0.0</version>
   <description>ROS package with basic utilities for controlling the rospix ROS node.</description>
 
