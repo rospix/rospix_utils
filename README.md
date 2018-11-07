@@ -1,4 +1,4 @@
-# rospix utils
+# Rospix utils
 
 Sample utilities for basic control of rospix and visualization of the measured data.
 
