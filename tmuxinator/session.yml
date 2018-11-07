@@ -13,6 +13,12 @@ windows:
       panes:
         - waitForRos; roslaunch rospix dummy.launch
         - waitForRos; sleep 2; rosservice call /rospix/sensor_0/do_continuous_exposure 2.0
+  - normalize:
+      layout: even-vertical
+      panes:
+        - waitForRos; roslaunch rospix_utils normalizer.launch
+        - waitForRos; rqt_image_view
+        - waitForRos; rqt_image_view
   - classification:
       layout: even-vertical
       panes:
