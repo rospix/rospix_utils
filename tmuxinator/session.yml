@@ -1,7 +1,7 @@
 name: simulation
 root: ./
 
-startup_window: takeoff
+startup_window: classification
 pre_window: export UAV_NAME=uav1
 windows:
   - roscore:
@@ -11,9 +11,9 @@ windows:
   - rospix:
       layout: even-vertical
       panes:
-        - sleep 1; roslaunch rospix dummy.launch
-        - sleep 3; rosservice call /rospix/sensor_0/do_continuous_exposure 1.0
+        - waitForRos; roslaunch rospix dummy.launch
+        - waitForRos; sleep 2; rosservice call /rospix/sensor_0/do_continuous_exposure 2.0
   - classification:
       layout: even-vertical
       panes:
-        - sleep 1; roslaunch rospix_classification classification.launch
+        - waitForRos; roslaunch rospix_classification classification.launch
