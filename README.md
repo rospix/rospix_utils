@@ -1,4 +1,4 @@
-# rospix utils
+# Rospix utils
 
 Sample utilities for basic control of rospix and visualization of the measured data.
 
@@ -43,3 +43,11 @@ Launching the _saver_ utility with the desired sensor number:
 ```bash
 roslaunch rospix_utils saver.launch sensor:=0
 ```
+
+## References
+
+1. T. Baca, D. Turecek, R. McEntaffer and R. Filgas, *Rospix: Modular Software Tool for Automated Data Acquisitions of Timepix Detectors on Robot Operating System*, Journal of Instrumentation, 2018.
+
+# Acknowledgements
+
+The work has been done on behalf of Medipix2 collaboration and is currently supported by the Czech Science Foundation project 18-10088Y and by Czech Technical University grant no. SGS17/187/OHK3/3T/13.
