@@ -8,7 +8,7 @@ Inspecting images in the terminal is possible via the _ascii_ utility.
 
 Launching the _ascii_ utility with the desired sensor number:
 ```bash
-roslaunch utils ascii.launch sensor:=0
+roslaunch rospix_utils ascii.launch sensor:=0
 ```
 
 ![ascii image](misc/ascii.png)
@@ -20,7 +20,7 @@ The images are then republished on _image transport_ topic, which can be subscri
 
 Launching the _normalizer_ utility with the desired sensor number:
 ```bash
-roslaunch utils normalizer.launch sensor:=0
+roslaunch rospix_utils normalizer.launch sensor:=0
 ```
 
 ![normalized image](misc/rqt_image_view.jpg)
@@ -32,7 +32,7 @@ The utility changes the acquisition time in real time to maintain desired pixel 
 
 Launching the _controller_ utility with the desired sensor number:
 ```bash
-roslaunch utils controller.launch sensor:=0
+roslaunch rospix_utils controller.launch sensor:=0
 ```
 
 # Data saver
@@ -41,5 +41,5 @@ The _saver_ can export the measured data in easily parsable CSV file format.
 p
 Launching the _saver_ utility with the desired sensor number:
 ```bash
-roslaunch utils saver.launch sensor:=0
+roslaunch rospix_utils saver.launch sensor:=0
 ```

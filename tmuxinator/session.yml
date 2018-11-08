@@ -22,4 +22,4 @@ windows:
   - classification:
       layout: even-vertical
       panes:
-        - waitForRos; roslaunch rospix_classification classification.launch
+        - waitForRos; roslaunch rospix_classification real_time.launch
