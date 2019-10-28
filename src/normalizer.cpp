@@ -13,6 +13,8 @@
 // Image message type is defined by the rospix node
 #include <rospix/Image.h>
 
+#include <mrs_lib/ParamLoader.h>
+
 using namespace std;
 using namespace cv;
 
@@ -25,9 +27,12 @@ image_transport::Publisher image_publisher;
 // parameters set from config file
 bool   filter_broken_pixels;
 double filter_sigma;
+bool invert_ = false;
 
 // is called every time new image comes in
 void imageCallback(const rospix::ImageConstPtr& image_in) {
+
+  ROS_INFO("[%s]: got image", ros::this_node::getName().c_str());
 
   // prepare new output image
   cv::Mat image_out = cv::Mat::zeros(256, 256, CV_16UC1);
@@ -111,6 +116,17 @@ void imageCallback(const rospix::ImageConstPtr& image_in) {
     }
   }
 
+  if (invert_) {
+
+    for (int i = 0; i < 256; i++) {
+      for (int j = 0; j < 256; j++) {
+    
+        // normalize the pixel value... basically stretches the histogram to match full 16bits of the image
+        image_out.at<uint16_t>(i, j) = 65535 - image_out.at<uint16_t>(i, j);
+      }
+    }
+  }
+
   // prepare a message for publishing
   sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "mono16", image_out).toImageMsg();
 
@@ -124,9 +140,16 @@ int main(int argc, char** argv) {
   ros::init(argc, argv, "normalizer");
   ros::NodeHandle nh_ = ros::NodeHandle("~");
 
-  // load parameter from config file
-  nh_.param("filter_broken_pixels", filter_broken_pixels, true);
-  nh_.param("filter_sigma", filter_sigma, 1.0);
+  mrs_lib::ParamLoader param_loader(nh_, "Normalizer");
+
+  param_loader.load_param("filter_broken_pixels", filter_broken_pixels);
+  param_loader.load_param("filter_sigma", filter_sigma );
+  param_loader.load_param("invert", invert_ );
+
+  if (!param_loader.loaded_successfully()) {
+    ROS_ERROR("Could not load all parameters!");
+    ros::shutdown();
+  }
 
   // SUBSCRIBERS
   image_subscriber = nh_.subscribe("image_in", 1, &imageCallback, ros::TransportHints().tcpNoDelay());

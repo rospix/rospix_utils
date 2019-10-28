@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(rospix_utils)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
+
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -9,25 +11,15 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
   dynamic_reconfigure
-  message_generation
   rospix
   cv_bridge
+  rospy
+  mrs_lib
 )
-
-# add_message_files(FILES
-#   message.msg
-# )
-
-# generate_messages(DEPENDENCIES
-#  std_msgs
-#  geometry_msgs
-# )
 
 catkin_package(
-  CATKIN_DEPENDS message_runtime roscpp rospy std_msgs cv_bridge
+  CATKIN_DEPENDS message_runtime roscpp rospy std_msgs cv_bridge rospy mrs_lib
 )
-
-set(CMAKE_CXX_FLAGS "-std=c++11")
 
 ###########
 ## Build ##
@@ -50,6 +42,20 @@ target_link_libraries(ascii
 add_executable(normalizer src/normalizer.cpp)
 add_dependencies(normalizer ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(normalizer
+  ${catkin_LIBRARIES}
+)
+
+# image normalizing republisher
+add_executable(integrator src/integrator.cpp)
+add_dependencies(integrator ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(integrator
+  ${catkin_LIBRARIES}
+)
+
+# image normalizing republisher
+add_executable(masker src/masker.cpp)
+add_dependencies(masker ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(masker
   ${catkin_LIBRARIES}
 )
 

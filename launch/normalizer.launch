@@ -1,15 +1,22 @@
 <launch>
 
   <arg name="sensor" default="0" />
+  <arg name="name_suffix" default="" />
+  <arg name="topic" default="$(arg topic)" />
+  <arg name="invert" default="false" />
 
   <!-- launch the node -->
-  <node name="normalize_$(arg sensor)" pkg="rospix_utils" type="normalizer" output="screen">
+  <node name="norm$(arg name_suffix)_$(arg sensor)" pkg="rospix_utils" type="normalizer" output="screen">
 
     <!-- load config from config file -->
     <rosparam file="$(find rospix_utils)/config/normalizer.yaml" />
 
+    <param name="invert" value="$(arg invert)" />
+
     <!-- map the correct topics -->
-    <remap from="~image_in" to="/rospix/sensor_$(arg sensor)/image" />
+    <!-- <remap from="~image_in" to="masker_$(arg sensor)/image_out" /> -->
+    <!-- <remap from="~image_in" to="rospix/sensor_$(arg sensor)/image" /> -->
+    <remap from="~image_in" to="$(arg topic)" />
     <remap from="~image_out" to="~image_out" />
 
   </node>

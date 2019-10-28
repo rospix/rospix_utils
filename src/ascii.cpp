@@ -18,21 +18,21 @@ ros::Subscriber image_subscriber;
 int8_t output[65536];
 
 // size * bin_size = 256
-int size;      // size of the output image
+int mysize;      // size of the output image
 int bin_size;  // size of the bin
 
 // is called every time new image comes in
 void imageCallback(const rospix::ImageConstPtr& msg) {
 
   // clear the output array
-  memset(output, 0, size * size * sizeof(uint8_t));
+  memset(output, 0, mysize * mysize * sizeof(uint8_t));
 
   // have we found an active pixel within the bin?
   bool found = false;
 
   // iterate over all binns
-  for (int i = 0; i < size; i++) {
-    for (int j = 0; j < size; j++) {
+  for (int i = 0; i < mysize; i++) {
+    for (int j = 0; j < mysize; j++) {
 
       found = false;
 
@@ -44,7 +44,7 @@ void imageCallback(const rospix::ImageConstPtr& msg) {
           if (msg->image[k * 256 + l] > 0) {
 
             // turn on the bin
-            output[i * size + j] = 1;
+            output[i * mysize + j] = 1;
             found                = true;
             break;  // leave the cycle
           }
@@ -61,20 +61,20 @@ void imageCallback(const rospix::ImageConstPtr& msg) {
            ((msg->mode == 0) ? "MPX" : "TOT"), msg->exposure_time, msg->bias, msg->threshold, msg->interface.c_str(), msg->clock);
 
   // print top of the image frame
-  for (int i = 0; i < size + 2; i++) {
+  for (int i = 0; i < mysize + 2; i++) {
     printf("-");
   }
 
   printf("\n");
 
   // for all rows of the ascii image
-  for (int i = 0; i < size; i++) {
+  for (int i = 0; i < mysize; i++) {
 
     printf("|");  // frame left
 
     // for all columns of the row of the acii image
-    for (int j = 0; j < size; j++) {
-      printf("%c", (output[i * size + j] == 0) ? ' ' : 'x');
+    for (int j = 0; j < mysize; j++) {
+      printf("%c", (output[i * mysize + j] == 0) ? ' ' : 'x');
     }
 
     printf("|");  // frame right
@@ -82,7 +82,7 @@ void imageCallback(const rospix::ImageConstPtr& msg) {
   }
 
   // print the frame bottom
-  for (int i = 0; i < size + 2; i++) {
+  for (int i = 0; i < mysize + 2; i++) {
     printf("-");
   }
 
@@ -96,8 +96,8 @@ int main(int argc, char** argv) {
   ros::NodeHandle nh_ = ros::NodeHandle("~");
 
   // load parameters from config file
-  nh_.param("size", size, 16);
-  bin_size = 256 / size;
+  nh_.param("size", mysize, 16);
+  bin_size = 256 / mysize;
 
   // SUBSCRIBERS
   image_subscriber = nh_.subscribe("image_in", 1, &imageCallback, ros::TransportHints().tcpNoDelay());
