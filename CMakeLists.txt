@@ -11,14 +11,14 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
   dynamic_reconfigure
-  rospix
   cv_bridge
   rospy
   mrs_lib
+  rad_msgs
 )
 
 catkin_package(
-  CATKIN_DEPENDS message_runtime roscpp rospy std_msgs cv_bridge rospy mrs_lib
+  CATKIN_DEPENDS message_runtime roscpp rospy std_msgs cv_bridge rospy mrs_lib rad_msgs
 )
 
 ###########

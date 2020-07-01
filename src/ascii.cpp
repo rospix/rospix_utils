@@ -7,7 +7,7 @@
 #include <stdlib.h>
 
 // neccessary to read the image from rospix
-#include <rospix/Image.h>
+#include <rad_msgs/TimepixImage.h>
 
 using namespace std;
 
@@ -18,11 +18,11 @@ ros::Subscriber image_subscriber;
 int8_t output[65536];
 
 // size * bin_size = 256
-int mysize;      // size of the output image
+int mysize;    // size of the output image
 int bin_size;  // size of the bin
 
 // is called every time new image comes in
-void imageCallback(const rospix::ImageConstPtr& msg) {
+void imageCallback(const rad_msgs::TimepixImageConstPtr& msg) {
 
   // clear the output array
   memset(output, 0, mysize * mysize * sizeof(uint8_t));
@@ -45,7 +45,7 @@ void imageCallback(const rospix::ImageConstPtr& msg) {
 
             // turn on the bin
             output[i * mysize + j] = 1;
-            found                = true;
+            found                  = true;
             break;  // leave the cycle
           }
         }

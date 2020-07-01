@@ -11,9 +11,9 @@
 #include <image_transport/image_transport.h>
 
 // Image message type is defined by the rospix node
-#include <rospix/Image.h>
+#include <rad_msgs/TimepixImage.h>
 
-#include <mrs_lib/ParamLoader.h>
+#include <mrs_lib/param_loader.h>
 
 using namespace std;
 using namespace cv;
@@ -27,10 +27,10 @@ image_transport::Publisher image_publisher;
 // parameters set from config file
 bool   filter_broken_pixels;
 double filter_sigma;
-bool invert_ = false;
+bool   invert_ = false;
 
 // is called every time new image comes in
-void imageCallback(const rospix::ImageConstPtr& image_in) {
+void imageCallback(const rad_msgs::TimepixImageConstPtr& image_in) {
 
   ROS_INFO("[%s]: got image", ros::this_node::getName().c_str());
 
@@ -120,7 +120,7 @@ void imageCallback(const rospix::ImageConstPtr& image_in) {
 
     for (int i = 0; i < 256; i++) {
       for (int j = 0; j < 256; j++) {
-    
+
         // normalize the pixel value... basically stretches the histogram to match full 16bits of the image
         image_out.at<uint16_t>(i, j) = 65535 - image_out.at<uint16_t>(i, j);
       }
@@ -142,11 +142,11 @@ int main(int argc, char** argv) {
 
   mrs_lib::ParamLoader param_loader(nh_, "Normalizer");
 
-  param_loader.load_param("filter_broken_pixels", filter_broken_pixels);
-  param_loader.load_param("filter_sigma", filter_sigma );
-  param_loader.load_param("invert", invert_ );
+  param_loader.loadParam("filter_broken_pixels", filter_broken_pixels);
+  param_loader.loadParam("filter_sigma", filter_sigma);
+  param_loader.loadParam("invert", invert_);
 
-  if (!param_loader.loaded_successfully()) {
+  if (!param_loader.loadedSuccessfully()) {
     ROS_ERROR("Could not load all parameters!");
     ros::shutdown();
   }

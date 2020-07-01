@@ -9,16 +9,16 @@
 // some opencv includes
 #include <cv_bridge/cv_bridge.h>
 #include <image_transport/image_transport.h>
-#include <rospix/Image.h>
 
-// Image message type is defined by the rospix node
-#include <rospix/Image.h>
+#include <rad_msgs/TimepixImage.h>
+#include <rad_msgs/ClusterList.h>
 
 using namespace std;
 using namespace cv;
 
 // subscriber for input timepix images
 ros::Subscriber image_subscriber;
+ros::Subscriber cluster_list_subscriber;
 
 // publisher for output images
 ros::Publisher image_publisher;
@@ -30,7 +30,7 @@ double filter_sigma;
 cv::Mat image_out = cv::Mat::zeros(256, 256, CV_16UC1);
 
 // is called every time new image comes in
-void imageCallback(const rospix::ImageConstPtr& image_in) {
+void imageCallback(const rad_msgs::TimepixImageConstPtr& image_in) {
 
   ROS_INFO("[%s]: got image", ros::this_node::getName().c_str());
 
@@ -50,7 +50,48 @@ void imageCallback(const rospix::ImageConstPtr& image_in) {
   }
 
   // prepare a message for publishing
-  rospix::Image outputImage;
+  rad_msgs::TimepixImage outputImage;
+
+  // iterate over all pixels if the image
+  for (int i = 0; i < 256; i++) {
+    for (int j = 0; j < 256; j++) {
+
+      outputImage.image[i * 256 + j] = image_out.at<uint16_t>(i, j);
+
+    }
+  }
+
+  image_publisher.publish(outputImage);
+}
+
+// is called every time new image comes in
+void clusterListCallback(const rad_msgs::ClusterListConstPtr& cluster_list) {
+
+  ROS_INFO("[%s]: got clusters", ros::this_node::getName().c_str());
+
+  // iterate over all clusters
+  for (size_t i = 0; i < cluster_list->clusters.size(); i++) {
+
+    rad_msgs::Cluster cluster = cluster_list->clusters[i];
+
+    for (size_t j = 0; j < cluster.pixels.size(); j++) {
+
+      int x = cluster.pixels[j].x;
+      int y = cluster.pixels[j].y;
+
+      long temp_val = image_out.at<uint16_t>(x, y) + cluster.pixels[j].energy;
+
+      if (temp_val >= 65535) {
+        temp_val = 65535;
+      }
+
+      image_out.at<uint16_t>(x, y) = temp_val;
+
+    }
+  }
+
+  // prepare a message for publishing
+  rad_msgs::TimepixImage outputImage;
 
   // iterate over all pixels if the image
   for (int i = 0; i < 256; i++) {
@@ -72,9 +113,10 @@ int main(int argc, char** argv) {
 
   // SUBSCRIBERS
   image_subscriber = nh_.subscribe("image_in", 1, &imageCallback, ros::TransportHints().tcpNoDelay());
+  cluster_list_subscriber = nh_.subscribe("cluster_list_in", 1, &clusterListCallback, ros::TransportHints().tcpNoDelay());
 
   // PUBLISHERS
-  image_publisher = nh_.advertise<rospix::Image>("image_out", 1);
+  image_publisher = nh_.advertise<rad_msgs::TimepixImage>("image_out", 1);
 
   ROS_INFO("Starting integrator republisher for %s", image_subscriber.getTopic().c_str());
 

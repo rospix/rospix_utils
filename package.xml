@@ -19,12 +19,12 @@
   <depend>std_msgs</depend>
   <depend>dynamic_reconfigure</depend>
   <depend>libopencv-dev</depend>
-  <depend>rospix</depend>
   <depend>message_runtime</depend>
   <depend>image_transport</depend>
   <depend>rospy</depend>
   <depend>cv_bridge</depend>
   <depend>mrs_lib</depend>
+  <depend>rad_msgs</depend>
 
   <export>
   </export>

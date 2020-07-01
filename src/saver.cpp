@@ -7,7 +7,7 @@
 #include <stdlib.h>
 
 // Image message type is defined by the rospix node
-#include <rospix/Image.h>
+#include <rad_msgs/TimepixImage.h>
 #include <std_msgs/Float64.h>
 
 using namespace std;
@@ -30,7 +30,7 @@ void temp3CallBack(const std_msgs::Float64::ConstPtr& msg) {
 }
 
 // is called every time new image comes in
-void imageCallback(const rospix::ImageConstPtr& msg) {
+void imageCallback(const rad_msgs::TimepixImageConstPtr& msg) {
 
   double date = ros::Time::now().toSec();
 

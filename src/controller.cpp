@@ -7,13 +7,11 @@
 #include <stdlib.h>
 
 // neccessary to read the image from rospix
-#include <rospix/Image.h>
-
-// message for calling for single and continuous exposure
-#include <rospix/Exposure.h>
+#include <rad_msgs/TimepixImage.h>
+#include <rad_msgs/RospixExposure.h>
+#include <rad_msgs/SetDouble.h>
 
 // messages for setting exposure time
-#include <rospix/SetDouble.h>
 
 // message for publishing exposure
 #include <std_msgs/Float64.h>
@@ -82,7 +80,7 @@ void publisherThread(void) {
 }
 
 // is called every time new image comes in
-void imageCallback(const rospix::ImageConstPtr& msg) {
+void imageCallback(const rad_msgs::TimepixImageConstPtr& msg) {
 
   got_image       = true;
   last_time_image = ros::Time::now();
@@ -125,7 +123,7 @@ void imageCallback(const rospix::ImageConstPtr& msg) {
       exposure = min_exposure_;
 
     // change the exposure time
-    rospix::SetDouble newMessage;
+    rad_msgs::SetDouble newMessage;
     newMessage.request.value = exposure;
 
     // call the service
@@ -165,8 +163,8 @@ int main(int argc, char** argv) {
   exposure_time_publisher = nh_.advertise<std_msgs::Float64>("exposure_time", 1);
 
   // SERVICES
-  service_do_exposure   = nh_.serviceClient<rospix::Exposure>("do_exposure");  // we choose some general topic name and later remap it in launch file
-  service_exposure_time = nh_.serviceClient<rospix::SetDouble>("set_exposure");
+  service_do_exposure   = nh_.serviceClient<rad_msgs::RospixExposure>("do_exposure");  // we choose some general topic name and later remap it in launch file
+  service_exposure_time = nh_.serviceClient<rad_msgs::SetDouble>("set_exposure");
 
   // create the publisher thread
   publisher_thread = std::thread(&publisherThread);
@@ -185,7 +183,7 @@ int main(int argc, char** argv) {
       if (!got_image || ((ros::Time::now() - last_time_image).toSec() > (previous_exposure + 1))) {
 
         // reinitiate the exposures
-        rospix::Exposure newMessage;
+        rad_msgs::RospixExposure newMessage;
         newMessage.request.exposure_time = exposure;
 
         if (service_do_exposure.call(newMessage)) {

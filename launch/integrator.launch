@@ -2,12 +2,18 @@
 
   <arg name="sensor" default="0" />
 
+  <arg name="debug" default="false" />
+  <arg unless="$(arg debug)" name="launch_prefix_debug" value=""/>
+  <arg     if="$(arg debug)" name="launch_prefix_debug" value="debug_roslaunch"/>
+
   <!-- launch the node -->
-  <node name="integrator_$(arg sensor)" pkg="rospix_utils" type="integrator" output="screen">
+  <node name="integrator_$(arg sensor)" pkg="rospix_utils" type="integrator" output="screen" launch-prefix="$(arg launch_prefix_debug)">
 
     <!-- map the correct topics -->
     <!-- <remap from="~image_in" to="rospix/sensor_$(arg sensor)/image" /> -->
     <remap from="~image_in" to="masker_$(arg sensor)/image_out" />
+    <remap from="~cluster_list_in" to="compton_camera/cluster_list" />
+
     <remap from="~image_out" to="~image_out" />
 
   </node>
