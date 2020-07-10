@@ -1,36 +1,126 @@
-// some ros includes
-#include <ros/package.h>
 #include <ros/ros.h>
+#include <ros/package.h>
+#include <nodelet/nodelet.h>
 
-// some std includes
-#include <stdio.h>
-#include <stdlib.h>
-
-// some opencv includes
 #include <cv_bridge/cv_bridge.h>
 #include <image_transport/image_transport.h>
 
 #include <rad_msgs/TimepixImage.h>
 #include <rad_msgs/ClusterList.h>
 
-using namespace std;
-using namespace cv;
+#include <dynamic_reconfigure/server.h>
+#include <rospix_utils/integratorConfig.h>
 
-// subscriber for input timepix images
-ros::Subscriber image_subscriber;
-ros::Subscriber cluster_list_subscriber;
+#include <mrs_lib/mutex.h>
+#include <mrs_lib/param_loader.h>
 
-// publisher for output images
-ros::Publisher image_publisher;
+namespace utils
+{
 
-// parameters set from config file
-bool   filter_broken_pixels;
-double filter_sigma;
+namespace integrator
+{
 
-cv::Mat image_out = cv::Mat::zeros(256, 256, CV_16UC1);
+/* class Integrator //{ */
 
-// is called every time new image comes in
-void imageCallback(const rad_msgs::TimepixImageConstPtr& image_in) {
+class Integrator : public nodelet::Nodelet {
+
+public:
+  virtual void onInit();
+
+private:
+  bool is_initialized_ = false;
+
+  ros::Subscriber image_subscriber_;
+  ros::Subscriber cluster_list_subscriber_;
+
+  ros::Publisher image_publisher_;
+
+  ros::Timer timer_cleanup_;
+
+  // parameters set from config file
+  bool   filter_broken_pixels;
+  double filter_sigma;
+
+  std::mutex mutex_image_out_;
+  cv::Mat    image_out_ = cv::Mat::zeros(256, 256, CV_16UC1);
+
+  // | --------------- dynamic reconfigure server --------------- |
+
+  boost::recursive_mutex                           mutex_drs_;
+  typedef rospix_utils::integratorConfig           DrsConfig_t;
+  typedef dynamic_reconfigure::Server<DrsConfig_t> Drs_t;
+  boost::shared_ptr<Drs_t>                         drs_;
+  void                                             callbackDrs(rospix_utils::integratorConfig& config, uint32_t level);
+  DrsConfig_t                                      drs_params_;
+  std::mutex                                       mutex_drs_params_;
+
+  // | ------------------------ callbacks ----------------------- |
+
+  void imageCallback(const rad_msgs::TimepixImageConstPtr& image_in);
+  void clusterListCallback(const rad_msgs::ClusterListConstPtr& cluster_list);
+
+  // | ------------------------- timers ------------------------- |
+
+  void timerCleanup([[maybe_unused]] const ros::TimerEvent& te);
+};
+
+//}
+
+/* onInit() //{ */
+
+void Integrator::onInit() {
+
+  ros::NodeHandle nh("~");
+
+  // | ------------------- load ros parameters ------------------ |
+  mrs_lib::ParamLoader param_loader(nh, "Integrator");
+
+  param_loader.loadParam("cleanup/enabled", drs_params_.cleanup_enabled);
+  param_loader.loadParam("cleanup/duration", drs_params_.duration);
+
+  if (!param_loader.loadedSuccessfully()) {
+    ROS_ERROR("[Integrator]: failed to load non-optional parameters!");
+    ros::shutdown();
+  }
+
+  // | ------------------- dynamic reconfigure ------------------ |
+
+  drs_.reset(new Drs_t(mutex_drs_, nh));
+  drs_->updateConfig(drs_params_);
+  Drs_t::CallbackType f = boost::bind(&Integrator::callbackDrs, this, _1, _2);
+  drs_->setCallback(f);
+
+  // | ---------------------- subscribers  ---------------------- |
+
+  image_subscriber_        = nh.subscribe("image_in", 1, &Integrator::imageCallback, this, ros::TransportHints().tcpNoDelay());
+  cluster_list_subscriber_ = nh.subscribe("cluster_list_in", 1, &Integrator::clusterListCallback, this, ros::TransportHints().tcpNoDelay());
+
+  // | ----------------------- publishers ----------------------- |
+
+  image_publisher_ = nh.advertise<rad_msgs::TimepixImage>("image_out", 1);
+
+  // | ------------------------- timers ------------------------- |
+
+  timer_cleanup_ = nh.createTimer(ros::Duration(drs_params_.duration), &Integrator::timerCleanup, this, false, drs_params_.cleanup_enabled);
+
+  ROS_INFO("Starting integrator republisher for %s", image_subscriber_.getTopic().c_str());
+
+  is_initialized_ = true;
+}
+
+//}
+
+// | ------------------------ callbacks ----------------------- |
+
+/* imageCallback() //{ */
+
+void Integrator::imageCallback(const rad_msgs::TimepixImageConstPtr& image_in) {
+
+  if (!is_initialized_) {
+    return;
+  }
+
+  std::scoped_lock lock(mutex_image_out_);
 
   ROS_INFO("[%s]: got image", ros::this_node::getName().c_str());
 
@@ -38,14 +128,13 @@ void imageCallback(const rad_msgs::TimepixImageConstPtr& image_in) {
   for (int i = 0; i < 256; i++) {
     for (int j = 0; j < 256; j++) {
 
-      long temp_val = image_out.at<uint16_t>(i, j) + image_in->image[i * 256 + j];
+      long temp_val = image_out_.at<uint16_t>(i, j) + image_in->image[i * 256 + j];
 
       if (temp_val >= 65535) {
         temp_val = 65535;
       }
 
-      image_out.at<uint16_t>(i, j) = temp_val;
-
+      image_out_.at<uint16_t>(i, j) = temp_val;
     }
   }
 
@@ -56,16 +145,24 @@ void imageCallback(const rad_msgs::TimepixImageConstPtr& image_in) {
   for (int i = 0; i < 256; i++) {
     for (int j = 0; j < 256; j++) {
 
-      outputImage.image[i * 256 + j] = image_out.at<uint16_t>(i, j);
-
+      outputImage.image[i * 256 + j] = image_out_.at<uint16_t>(i, j);
     }
   }
 
-  image_publisher.publish(outputImage);
+  image_publisher_.publish(outputImage);
 }
 
-// is called every time new image comes in
-void clusterListCallback(const rad_msgs::ClusterListConstPtr& cluster_list) {
+//}
+
+/* clusterListCallback() //{ */
+
+void Integrator::clusterListCallback(const rad_msgs::ClusterListConstPtr& cluster_list) {
+
+  if (!is_initialized_) {
+    return;
+  }
+
+  std::scoped_lock lock(mutex_image_out_);
 
   ROS_INFO("[%s]: got clusters", ros::this_node::getName().c_str());
 
@@ -79,14 +176,13 @@ void clusterListCallback(const rad_msgs::ClusterListConstPtr& cluster_list) {
       int x = cluster.pixels[j].x;
       int y = cluster.pixels[j].y;
 
-      long temp_val = image_out.at<uint16_t>(x, y) + cluster.pixels[j].energy;
+      long temp_val = image_out_.at<uint16_t>(x, y) + cluster.pixels[j].energy;
 
       if (temp_val >= 65535) {
         temp_val = 65535;
       }
 
-      image_out.at<uint16_t>(x, y) = temp_val;
-
+      image_out_.at<uint16_t>(x, y) = temp_val;
     }
   }
 
@@ -97,31 +193,68 @@ void clusterListCallback(const rad_msgs::ClusterListConstPtr& cluster_list) {
   for (int i = 0; i < 256; i++) {
     for (int j = 0; j < 256; j++) {
 
-      outputImage.image[i * 256 + j] = image_out.at<uint16_t>(i, j);
-
+      outputImage.image[i * 256 + j] = image_out_.at<uint16_t>(i, j);
     }
   }
 
-  image_publisher.publish(outputImage);
+  image_publisher_.publish(outputImage);
 }
 
-int main(int argc, char** argv) {
+//}
 
-  // initialize node and create no handle
-  ros::init(argc, argv, "integrator");
-  ros::NodeHandle nh_ = ros::NodeHandle("~");
+/* callbackDrs() //{ */
 
-  // SUBSCRIBERS
-  image_subscriber = nh_.subscribe("image_in", 1, &imageCallback, ros::TransportHints().tcpNoDelay());
-  cluster_list_subscriber = nh_.subscribe("cluster_list_in", 1, &clusterListCallback, ros::TransportHints().tcpNoDelay());
+void Integrator::callbackDrs(rospix_utils::integratorConfig& config, [[maybe_unused]] uint32_t level) {
 
-  // PUBLISHERS
-  image_publisher = nh_.advertise<rad_msgs::TimepixImage>("image_out", 1);
+  if (!is_initialized_) {
+    return;
+  }
 
-  ROS_INFO("Starting integrator republisher for %s", image_subscriber.getTopic().c_str());
+  {
+    std::scoped_lock lock(mutex_drs_params_);
 
-  // needed for stuff to work
-  ros::spin();
+    drs_params_ = config;
+  }
 
-  return 0;
+  timer_cleanup_.stop();
+  timer_cleanup_.setPeriod(ros::Duration(config.duration), true);
+
+  if (config.cleanup_enabled) {
+    timer_cleanup_.start();
+  }
+
+  ROS_INFO("[Integrator]: DRS params updated");
 }
+
+//}
+
+// | ------------------------- timers ------------------------- |
+
+/* timerCleanup() //{ */
+
+void Integrator::timerCleanup([[maybe_unused]] const ros::TimerEvent& te) {
+
+  if (!is_initialized_)
+    return;
+
+  std::scoped_lock lock(mutex_image_out_);
+
+  ROS_INFO("[Integrator]: cleaning up the image");
+
+  // iterate over all pixels if the image
+  for (int i = 0; i < 256; i++) {
+    for (int j = 0; j < 256; j++) {
+
+      image_out_.at<uint16_t>(i, j) = 0;
+    }
+  }
+}
+
+//}
+
+}  // namespace integrator
+
+}  // namespace utils
+
+#include <pluginlib/class_list_macros.h>
+PLUGINLIB_EXPORT_CLASS(utils::integrator::Integrator, nodelet::Nodelet);

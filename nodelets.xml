@@ -1,0 +1,5 @@
+<library path="lib/libIntegrator">
+  <class name="utils/Integrator" type="utils::integrator::Integrator" base_class_type="nodelet::Nodelet">
+    <description>Integrator nodelet</description>
+  </class>
+</library>

@@ -16,6 +16,7 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <depend>roscpp</depend>
+  <depend>nodelet</depend>
   <depend>std_msgs</depend>
   <depend>dynamic_reconfigure</depend>
   <depend>libopencv-dev</depend>
@@ -27,5 +28,9 @@
   <depend>rad_msgs</depend>
 
   <export>
+
+    <nodelet plugin="${prefix}/nodelets.xml" />
+
   </export>
+
 </package>

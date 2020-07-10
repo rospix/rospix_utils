@@ -15,10 +15,16 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   mrs_lib
   rad_msgs
+  nodelet
 )
 
+generate_dynamic_reconfigure_options(
+  config/integrator.cfg
+  )
+
 catkin_package(
-  CATKIN_DEPENDS message_runtime roscpp rospy std_msgs cv_bridge rospy mrs_lib rad_msgs
+  CATKIN_DEPENDS message_runtime roscpp rospy std_msgs cv_bridge rospy mrs_lib rad_msgs nodelet dynamic_reconfigure
+  LIBRARIES Integrator
 )
 
 ###########
@@ -29,6 +35,7 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(include
   ${catkin_INCLUDE_DIRS}
+  ${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake
 )
 
 # ascii art image printer
@@ -46,9 +53,13 @@ target_link_libraries(normalizer
 )
 
 # image normalizing republisher
-add_executable(integrator src/integrator.cpp)
-add_dependencies(integrator ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(integrator
+add_library(Integrator src/integrator.cpp)
+
+add_dependencies(Integrator
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS})
+
+target_link_libraries(Integrator
   ${catkin_LIBRARIES}
 )
 
