@@ -1,3 +1,5 @@
+/* includes //{ */
+
 #include <ros/ros.h>
 #include <ros/package.h>
 #include <nodelet/nodelet.h>
@@ -13,6 +15,8 @@
 
 #include <mrs_lib/mutex.h>
 #include <mrs_lib/param_loader.h>
+
+//}
 
 namespace utils
 {

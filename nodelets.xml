@@ -3,3 +3,9 @@
     <description>Integrator nodelet</description>
   </class>
 </library>
+
+<library path="lib/libNormalizer">
+  <class name="utils/Normalizer" type="utils::normalizer::Normalizer" base_class_type="nodelet::Nodelet">
+    <description>Normalizer nodelet</description>
+  </class>
+</library>

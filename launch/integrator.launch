@@ -2,6 +2,8 @@
 
   <arg name="sensor" default="0" />
 
+  <arg name="topic_cluster_list" default="compton_camera/cluster_list" />
+
   <arg name="debug" default="false" />
   <arg unless="$(arg debug)" name="launch_prefix_debug" value=""/>
   <arg     if="$(arg debug)" name="launch_prefix_debug" value="debug_roslaunch"/>
@@ -13,15 +15,13 @@
   <arg unless="$(arg standalone)" name="nodelet_manager" value="$(arg manager)"/>
   <arg     if="$(arg standalone)" name="nodelet_manager" value=""/>
 
-  <!-- launch the node -->
   <node name="integrator_$(arg sensor)" pkg="nodelet" type="nodelet" args="$(arg nodelet) utils/Integrator $(arg nodelet_manager)" output="screen" launch-prefix="$(arg launch_prefix_debug)">
 
     <rosparam file="$(find rospix_utils)/config/integrator.yaml" />
 
-    <!-- map the correct topics -->
-    <!-- <remap from="~image_in" to="rospix/sensor_$(arg sensor)/image" /> -->
+      <!-- map the correct topics -->
     <remap from="~image_in" to="masker_$(arg sensor)/image_out" />
-    <remap from="~cluster_list_in" to="compton_camera/cluster_list" />
+    <remap from="~cluster_list_in" to="$(arg topic_cluster_list)" />
 
     <remap from="~image_out" to="~image_out" />
 

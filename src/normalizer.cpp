@@ -1,36 +1,53 @@
-// some ros includes
-#include <ros/package.h>
+/* includes //{ */
+
 #include <ros/ros.h>
+#include <ros/package.h>
+#include <nodelet/nodelet.h>
 
-// some std includes
-#include <stdio.h>
-#include <stdlib.h>
-
-// some opencv includes
 #include <cv_bridge/cv_bridge.h>
 #include <image_transport/image_transport.h>
 
-// Image message type is defined by the rospix node
 #include <rad_msgs/TimepixImage.h>
 
 #include <mrs_lib/param_loader.h>
 
-using namespace std;
-using namespace cv;
+//}
 
-// subscriber for input timepix images
-ros::Subscriber image_subscriber;
+namespace utils
+{
 
-// publisher for output images
-image_transport::Publisher image_publisher;
+namespace normalizer
+{
 
-// parameters set from config file
-bool   filter_broken_pixels;
-double filter_sigma;
-bool   invert_ = false;
+/* class Normalizer //{ */
 
-// is called every time new image comes in
-void imageCallback(const rad_msgs::TimepixImageConstPtr& image_in) {
+class Normalizer : public nodelet::Nodelet {
+
+public:
+  virtual void onInit();
+
+private:
+  bool is_initialized_ = false;
+
+  // subscriber for input timepix images
+  ros::Subscriber image_subscriber_;
+
+  // publisher for output images
+  image_transport::Publisher image_publisher_;
+
+  // parameters set from config file
+  bool   filter_broken_pixels;
+  double filter_sigma;
+  bool   invert_ = false;
+
+  void imageCallback(const rad_msgs::TimepixImageConstPtr& image_in);
+};
+
+//}
+
+/* imageCallback() //{ */
+
+void Normalizer::imageCallback(const rad_msgs::TimepixImageConstPtr& image_in) {
 
   ROS_INFO("[%s]: got image", ros::this_node::getName().c_str());
 
@@ -131,16 +148,18 @@ void imageCallback(const rad_msgs::TimepixImageConstPtr& image_in) {
   sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "mono16", image_out).toImageMsg();
 
   // publish the message
-  image_publisher.publish(msg);
+  image_publisher_.publish(msg);
 }
 
-int main(int argc, char** argv) {
+//}
 
-  // initialize node and create no handle
-  ros::init(argc, argv, "normalizer");
-  ros::NodeHandle nh_ = ros::NodeHandle("~");
+/* onInit() //{ */
 
-  mrs_lib::ParamLoader param_loader(nh_, "Normalizer");
+void Normalizer::onInit() {
+
+  ros::NodeHandle nh("~");
+
+  mrs_lib::ParamLoader param_loader(nh, "Normalizer");
 
   param_loader.loadParam("filter_broken_pixels", filter_broken_pixels);
   param_loader.loadParam("filter_sigma", filter_sigma);
@@ -152,16 +171,22 @@ int main(int argc, char** argv) {
   }
 
   // SUBSCRIBERS
-  image_subscriber = nh_.subscribe("image_in", 1, &imageCallback, ros::TransportHints().tcpNoDelay());
+  image_subscriber_ = nh.subscribe("image_in", 1, &Normalizer::imageCallback, this, ros::TransportHints().tcpNoDelay());
 
   // PUBLISHERS
-  image_transport::ImageTransport it(nh_);
-  image_publisher = it.advertise("image_out", 1);
+  image_transport::ImageTransport it(nh);
+  image_publisher_ = it.advertise("image_out", 1);
 
-  ROS_INFO("Starting normalizing republisher for %s", image_subscriber.getTopic().c_str());
+  ROS_INFO("Starting normalizing republisher for %s", image_subscriber_.getTopic().c_str());
 
-  // needed for stuff to work
-  ros::spin();
-
-  return 0;
+  is_initialized_ = true;
 }
+
+//}
+
+}  // namespace normalizer
+
+}  // namespace utils
+
+#include <pluginlib/class_list_macros.h>
+PLUGINLIB_EXPORT_CLASS(utils::normalizer::Normalizer, nodelet::Nodelet);

@@ -24,7 +24,7 @@ generate_dynamic_reconfigure_options(
 
 catkin_package(
   CATKIN_DEPENDS message_runtime roscpp rospy std_msgs cv_bridge rospy mrs_lib rad_msgs nodelet dynamic_reconfigure
-  LIBRARIES Integrator
+  LIBRARIES Integrator Normalizer
 )
 
 ###########
@@ -46,9 +46,13 @@ target_link_libraries(ascii
 )
 
 # image normalizing republisher
-add_executable(normalizer src/normalizer.cpp)
-add_dependencies(normalizer ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(normalizer
+add_library(Normalizer src/normalizer.cpp)
+
+add_dependencies(Normalizer
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS})
+
+target_link_libraries(Normalizer
   ${catkin_LIBRARIES}
 )
 
