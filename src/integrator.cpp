@@ -66,6 +66,15 @@ private:
   // | ------------------------- timers ------------------------- |
 
   void timerCleanup([[maybe_unused]] const ros::TimerEvent& te);
+
+  // | --------------------- cluster memory --------------------- |
+
+  std::vector<rad_msgs::ClusterList> cluster_lists_;
+  std::mutex                         mutex_cluster_lists_;
+
+  // | ------------------------ routines ------------------------ |
+
+  void plotClusters(void);
 };
 
 //}
@@ -80,7 +89,10 @@ void Integrator::onInit() {
   mrs_lib::ParamLoader param_loader(nh, "Integrator");
 
   param_loader.loadParam("cleanup/enabled", drs_params_.cleanup_enabled);
-  param_loader.loadParam("cleanup/duration", drs_params_.duration);
+  param_loader.loadParam("cleanup/duration", drs_params_.cleanup_duration);
+
+  param_loader.loadParam("cluster_timeout/enabled", drs_params_.cluster_timeout_enabled);
+  param_loader.loadParam("cluster_timeout/timeout", drs_params_.cluster_timeout);
 
   if (!param_loader.loadedSuccessfully()) {
     ROS_ERROR("[Integrator]: failed to load non-optional parameters!");
@@ -105,7 +117,7 @@ void Integrator::onInit() {
 
   // | ------------------------- timers ------------------------- |
 
-  timer_cleanup_ = nh.createTimer(ros::Duration(drs_params_.duration), &Integrator::timerCleanup, this, false, drs_params_.cleanup_enabled);
+  timer_cleanup_ = nh.createTimer(ros::Duration(drs_params_.cleanup_duration), &Integrator::timerCleanup, this, false, drs_params_.cleanup_enabled);
 
   ROS_INFO("Starting integrator republisher for %s", image_subscriber_.getTopic().c_str());
 
@@ -171,37 +183,9 @@ void Integrator::clusterListCallback(const rad_msgs::ClusterListConstPtr& cluste
   ROS_INFO("[%s]: got clusters", ros::this_node::getName().c_str());
 
   // iterate over all clusters
-  for (size_t i = 0; i < cluster_list->clusters.size(); i++) {
+  cluster_lists_.push_back(*cluster_list);
 
-    rad_msgs::Cluster cluster = cluster_list->clusters[i];
-
-    for (size_t j = 0; j < cluster.pixels.size(); j++) {
-
-      int x = cluster.pixels[j].x;
-      int y = cluster.pixels[j].y;
-
-      long temp_val = image_out_.at<uint16_t>(x, y) + cluster.pixels[j].energy;
-
-      if (temp_val >= 65535) {
-        temp_val = 65535;
-      }
-
-      image_out_.at<uint16_t>(x, y) = temp_val;
-    }
-  }
-
-  // prepare a message for publishing
-  rad_msgs::TimepixImage outputImage;
-
-  // iterate over all pixels if the image
-  for (int i = 0; i < 256; i++) {
-    for (int j = 0; j < 256; j++) {
-
-      outputImage.image[i * 256 + j] = image_out_.at<uint16_t>(i, j);
-    }
-  }
-
-  image_publisher_.publish(outputImage);
+  plotClusters();
 }
 
 //}
@@ -221,7 +205,7 @@ void Integrator::callbackDrs(rospix_utils::integratorConfig& config, [[maybe_unu
   }
 
   timer_cleanup_.stop();
-  timer_cleanup_.setPeriod(ros::Duration(config.duration), true);
+  timer_cleanup_.setPeriod(ros::Duration(config.cleanup_duration), true);
 
   if (config.cleanup_enabled) {
     timer_cleanup_.start();
@@ -252,6 +236,69 @@ void Integrator::timerCleanup([[maybe_unused]] const ros::TimerEvent& te) {
       image_out_.at<uint16_t>(i, j) = 0;
     }
   }
+}
+
+//}
+
+// | ------------------------ routines ------------------------ |
+
+/* plotClusters() //{ */
+
+void Integrator::plotClusters(void) {
+
+  auto drs_params = mrs_lib::get_mutexed(mutex_drs_params_, drs_params_);
+
+  // iterate over all pixels if the image
+  for (int i = 0; i < 256; i++) {
+    for (int j = 0; j < 256; j++) {
+
+      image_out_.at<uint16_t>(i, j) = 0;
+    }
+  }
+
+  // iterate over all clusters
+  for (auto it = cluster_lists_.begin(); it != cluster_lists_.end();) {
+
+    if (drs_params.cluster_timeout && (ros::Time::now() - it->header.stamp).toSec() > drs_params.cluster_timeout) {
+      it = cluster_lists_.erase(it);
+      ROS_INFO("[Integrator]: removing old clusters");
+      continue;
+    }
+
+    for (size_t i = 0; i < it->clusters.size(); i++) {
+
+      rad_msgs::Cluster cluster = it->clusters[i];
+
+      for (size_t j = 0; j < cluster.pixels.size(); j++) {
+
+        int x = cluster.pixels[j].x;
+        int y = cluster.pixels[j].y;
+
+        long temp_val = image_out_.at<uint16_t>(x, y) + cluster.pixels[j].energy;
+
+        if (temp_val >= 65535) {
+          temp_val = 65535;
+        }
+
+        image_out_.at<uint16_t>(x, y) = temp_val;
+      }
+    }
+
+    it++;
+  }
+
+  // prepare a message for publishing
+  rad_msgs::TimepixImage outputImage;
+
+  // iterate over all pixels if the image
+  for (int i = 0; i < 256; i++) {
+    for (int j = 0; j < 256; j++) {
+
+      outputImage.image[i * 256 + j] = image_out_.at<uint16_t>(i, j);
+    }
+  }
+
+  image_publisher_.publish(outputImage);
 }
 
 //}

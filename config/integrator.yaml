@@ -1,3 +1,7 @@
 cleanup:
+  enabled: false
+  duration: 1.0 # [s]
+
+cluster_timeout:
   enabled: true
-  duration: 1.0
+  timeout: 1.0 # [s]
