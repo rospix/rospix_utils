@@ -1,6 +1,8 @@
+publisher_rate: 5.0 # [Hz]
+
 cleanup:
-  enabled: false
-  duration: 1.0 # [s]
+  enabled: true
+  duration: 2.0 # [s]
 
 cluster_timeout:
   enabled: true
