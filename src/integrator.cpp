@@ -122,7 +122,7 @@ void Integrator::onInit() {
   // | ------------------------- timers ------------------------- |
 
   timer_cleanup_ = nh.createTimer(ros::Duration(drs_params_.cleanup_duration), &Integrator::timerCleanup, this, false, drs_params_.cleanup_enabled);
-  timer_publish_ = nh.createTimer(ros::Duration(drs_params_.publisher_rate), &Integrator::timerPublish, this, true);
+  timer_publish_ = nh.createTimer(ros::Duration(1.0/drs_params_.publisher_rate), &Integrator::timerPublish, this);
 
   ROS_INFO("Starting integrator republisher for %s", image_subscriber_.getTopic().c_str());
 
@@ -241,7 +241,7 @@ void Integrator::timerPublish([[maybe_unused]] const ros::TimerEvent& te) {
 
   std::scoped_lock lock(mutex_image_out_);
 
-  ROS_INFO_THROTTLE(1.0, "[Integrator]: publishing");
+  ROS_INFO("[Integrator]: publishing");
 
   // prepare a message for publishing
   rad_msgs::TimepixImage outputImage;
