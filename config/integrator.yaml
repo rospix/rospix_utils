@@ -1,3 +1,5 @@
+publisher_rate: 10
+
 cleanup:
   enabled: true
   duration: 10.0 # [s]
