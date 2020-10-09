@@ -78,7 +78,7 @@ private:
 
   // | ------------------------ routines ------------------------ |
 
-  void plotClusters(const rad_msgs::ClusterListConstPtr& cluster_list);
+  void plotClusters();
 };
 
 //}
@@ -176,10 +176,8 @@ void Integrator::clusterListCallback(const rad_msgs::ClusterListConstPtr& cluste
 
   ROS_INFO("[%s]: got clusters", ros::this_node::getName().c_str());
 
-  /* // iterate over all clusters */
-  /* cluster_lists_.push_back(*cluster_list); */
-
-  plotClusters(cluster_list);
+  // iterate over all clusters
+  cluster_lists_.push_back(*cluster_list);
 }
 
 //}
@@ -245,13 +243,14 @@ void Integrator::timerPublish([[maybe_unused]] const ros::TimerEvent& te) {
 
   ROS_INFO("[Integrator]: publishing");
 
+  plotClusters();
+
   // prepare a message for publishing
   rad_msgs::TimepixImage outputImage;
 
   // iterate over all pixels if the image
   for (int i = 0; i < 256; i++) {
     for (int j = 0; j < 256; j++) {
-
       outputImage.image[i * 256 + j] = image_out_.at<uint16_t>(i, j);
     }
   }
@@ -265,47 +264,47 @@ void Integrator::timerPublish([[maybe_unused]] const ros::TimerEvent& te) {
 
 /* plotClusters() //{ */
 
-void Integrator::plotClusters(const rad_msgs::ClusterListConstPtr& cluster_list) {
+void Integrator::plotClusters() {
 
-  /* auto drs_params = mrs_lib::get_mutexed(mutex_drs_params_, drs_params_); */
+  auto drs_params = mrs_lib::get_mutexed(mutex_drs_params_, drs_params_);
 
-  /* // iterate over all pixels if the image */
-  /* for (int i = 0; i < 256; i++) { */
-  /*   for (int j = 0; j < 256; j++) { */
-  /*     image_out_.at<uint16_t>(i, j) = 0; */
-  /*   } */
-  /* } */
-
-  // iterate over all clusters
-  /* for (auto it = cluster_lists_.begin(); it != cluster_lists_.end();) { */
-
-  /* if (drs_params.cluster_timeout && (ros::Time::now() - it->header.stamp).toSec() > drs_params.cluster_timeout) { */
-  /*   it = cluster_lists_.erase(it); */
-  /*   ROS_INFO("[Integrator]: removing old clusters"); */
-  /*   continue; */
-  /* } */
-
-  for (size_t i = 0; i < cluster_list->clusters.size(); i++) {
-
-    rad_msgs::Cluster cluster = cluster_list->clusters[i];
-
-    for (size_t j = 0; j < cluster.pixels.size(); j++) {
-
-      int x = cluster.pixels[j].x;
-      int y = cluster.pixels[j].y;
-
-      long temp_val = image_out_.at<uint16_t>(x, y) + cluster.pixels[j].energy;
-
-      if (temp_val >= 65535) {
-        temp_val = 65535;
-      }
-
-      image_out_.at<uint16_t>(x, y) = temp_val;
+  // clear the image
+  for (int i = 0; i < 256; i++) {
+    for (int j = 0; j < 256; j++) {
+      image_out_.at<uint16_t>(i, j) = 0;
     }
   }
 
-  /* it++; */
-  /* } */
+  // iterate over all clusters lists
+  for (auto it = cluster_lists_.begin(); it != cluster_lists_.end();) {
+
+    if (drs_params.cluster_timeout && (ros::Time::now() - it->header.stamp).toSec() > drs_params.cluster_timeout) {
+      it = cluster_lists_.erase(it);
+      ROS_INFO("[Integrator]: removing old clusters");
+      continue;
+    }
+
+    for (size_t i = 0; i < it->clusters.size(); i++) {
+
+      rad_msgs::Cluster cluster = it->clusters[i];
+
+      for (size_t j = 0; j < cluster.pixels.size(); j++) {
+
+        int x = cluster.pixels[j].x;
+        int y = cluster.pixels[j].y;
+
+        long temp_val = image_out_.at<uint16_t>(x, y) + cluster.pixels[j].energy;
+
+        if (temp_val >= 65535) {
+          temp_val = 65535;
+        }
+
+        image_out_.at<uint16_t>(x, y) = temp_val;
+      }
+    }
+
+    it++;
+  }
 }
 
 //}
