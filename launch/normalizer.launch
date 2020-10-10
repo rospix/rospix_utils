@@ -1,6 +1,6 @@
 <launch>
 
-
+  <arg name="node_name" default="normalizer" />
   <arg name="sensor" default="0" />
   <arg name="name_suffix" default="" />
   <arg name="topic" default="$(arg topic)" />
@@ -13,7 +13,7 @@
   <arg unless="$(arg standalone)" name="nodelet_manager" value="$(arg manager)"/>
   <arg     if="$(arg standalone)" name="nodelet_manager" value=""/>
 
-  <node name="norm$(arg name_suffix)_$(arg sensor)" pkg="nodelet" type="nodelet" args="$(arg nodelet) utils/Normalizer $(arg nodelet_manager)" output="screen">
+  <node name="$(arg node_name)" pkg="nodelet" type="nodelet" args="$(arg nodelet) utils/Normalizer $(arg nodelet_manager)" output="screen">
 
     <rosparam file="$(find rospix_utils)/config/normalizer.yaml" />
 
