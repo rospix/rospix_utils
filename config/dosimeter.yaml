@@ -1,6 +1,10 @@
-publisher_rate: 5.0 # [Hz]
+publisher_rate: 60.0 # [Hz]
 
 time_window: 5.0 # [s]
+
+filter:
+  enabled: true
+  k: 0.995
 
 material_density: 5850.0 # [kg/m^3]
 

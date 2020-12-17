@@ -40,10 +40,15 @@ private:
   double _material_density_;
   double _detector_thickness_;
 
+  bool _filter_enabled_;
+  double _filter_k_;
+
   double detector_mass_;
 
   ros::Subscriber subscriber_cluster_list_;
   ros::Publisher  publisher_dose_;
+
+  double filtered_output_ = 0;
 
   ros::Timer timer_publish_;
 
@@ -81,6 +86,9 @@ void Dosimeter::onInit() {
   param_loader.loadParam("time_window", _time_window_);
   param_loader.loadParam("material_density", _material_density_);
   param_loader.loadParam("detector_thickness", _detector_thickness_);
+
+  param_loader.loadParam("filter/enabled", _filter_enabled_);
+  param_loader.loadParam("filter/k", _filter_k_);
 
   if (!param_loader.loadedSuccessfully()) {
     ROS_ERROR("[Dosimeter]: failed to load non-optional parameters!");
@@ -144,7 +152,6 @@ void Dosimeter::timerPublish([[maybe_unused]] const ros::TimerEvent& te) {
 
     if ((ros::Time::now() - it->header.stamp).toSec() > _time_window_) {
       it = cluster_lists_.erase(it);
-      ROS_INFO_THROTTLE(1.0, "[Integrator]: removing old clusters");
       continue;
     }
 
@@ -163,34 +170,38 @@ void Dosimeter::timerPublish([[maybe_unused]] const ros::TimerEvent& te) {
     }
   }
 
-  printf("\n");
-
   // -> J/kg
   total_dose = total_dose / detector_mass_;
-  ROS_INFO("[Dosimeter]: %f [J/kg]", total_dose);
+  ROS_INFO_THROTTLE(1.0, "[Dosimeter]: %f [J/kg]", total_dose);
 
   // -> Gy per second
   total_dose = total_dose / _time_window_;
-  ROS_INFO("[Dosimeter]: %f [Gy/s]", total_dose);
+  ROS_INFO_THROTTLE(1.0, "[Dosimeter]: %f [Gy/s]", total_dose);
 
   // -> uGy per second
   double total_dose_mgy = total_dose * 1000.0;
-  ROS_INFO("[Dosimeter]: %f [uGy/s]", total_dose);
+  ROS_INFO_THROTTLE(1.0, "[Dosimeter]: %f [uGy/s]", total_dose);
 
   // -> uGy per second
   total_dose = total_dose * 1e6;
-  ROS_INFO("[Dosimeter]: %f [uGy/s]", total_dose);
+  ROS_INFO_THROTTLE(1.0, "[Dosimeter]: %f [uGy/s]", total_dose);
 
   // -> uGy per minute
   total_dose = 60.0 * total_dose;
-  ROS_INFO("[Dosimeter]: %f [uGy/min]", total_dose);
+  ROS_INFO_THROTTLE(1.0, "[Dosimeter]: %f [uGy/min]", total_dose);
 
   // -> mGy per year
   total_dose_mgy = 60*60*24*365 * total_dose_mgy;
-  ROS_INFO("[Dosimeter]: %f [mGy/year]", total_dose_mgy);
+  ROS_INFO_THROTTLE(1.0, "[Dosimeter]: %f [mGy/year]", total_dose_mgy);
+
+  if (_filter_enabled_) {
+    filtered_output_ = _filter_k_ * filtered_output_ + (1.0 - _filter_k_) * total_dose_mgy;
+  } else {
+    filtered_output_ = total_dose_mgy;
+  }
 
   std_msgs::Float64 msg;
-  msg.data = total_dose_mgy;
+  msg.data = filtered_output_;
 
   publisher_dose_.publish(msg);
 }
