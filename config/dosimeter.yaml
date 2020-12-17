@@ -1,0 +1,7 @@
+publisher_rate: 5.0 # [Hz]
+
+time_window: 5.0 # [s]
+
+material_density: 5850.0 # [kg/m^3]
+
+detector_thickness: 0.002 # [m]

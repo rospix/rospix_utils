@@ -24,7 +24,7 @@ generate_dynamic_reconfigure_options(
 
 catkin_package(
   CATKIN_DEPENDS message_runtime roscpp rospy std_msgs cv_bridge rospy mrs_lib rad_msgs nodelet dynamic_reconfigure
-  LIBRARIES Integrator Normalizer
+  LIBRARIES Integrator Normalizer Dosimeter
 )
 
 ###########
@@ -64,6 +64,17 @@ add_dependencies(Integrator
   ${catkin_EXPORTED_TARGETS})
 
 target_link_libraries(Integrator
+  ${catkin_LIBRARIES}
+)
+
+# image normalizing republisher
+add_library(Dosimeter src/dosimeter.cpp)
+
+add_dependencies(Dosimeter
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS})
+
+target_link_libraries(Dosimeter
   ${catkin_LIBRARIES}
 )
 

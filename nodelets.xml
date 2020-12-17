@@ -9,3 +9,9 @@
     <description>Normalizer nodelet</description>
   </class>
 </library>
+
+<library path="lib/libDosimeter">
+  <class name="utils/Dosimeter" type="utils::dosimeter::Dosimeter" base_class_type="nodelet::Nodelet">
+    <description>Dosimeter nodelet</description>
+  </class>
+</library>
