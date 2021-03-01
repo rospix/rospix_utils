@@ -13,7 +13,7 @@
 
 //}
 
-namespace utils
+namespace rospix_utils
 {
 
 namespace normalizer
@@ -186,7 +186,7 @@ void Normalizer::onInit() {
 
 }  // namespace normalizer
 
-}  // namespace utils
+}  // namespace rospix_utils
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS(utils::normalizer::Normalizer, nodelet::Nodelet);
+PLUGINLIB_EXPORT_CLASS(rospix_utils::normalizer::Normalizer, nodelet::Nodelet);

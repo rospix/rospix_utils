@@ -28,9 +28,7 @@
   <depend>rad_msgs</depend>
 
   <export>
-
     <nodelet plugin="${prefix}/nodelets.xml" />
-
   </export>
 
 </package>

@@ -19,7 +19,7 @@
 
 //}
 
-namespace utils
+namespace rospix_utils
 {
 
 namespace dosimeter
@@ -221,7 +221,7 @@ double Dosimeter::energykEv2J(const double in) {
 
 }  // namespace dosimeter
 
-}  // namespace utils
+}  // namespace rospix_utils
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS(utils::dosimeter::Dosimeter, nodelet::Nodelet);
+PLUGINLIB_EXPORT_CLASS(rospix_utils::dosimeter::Dosimeter, nodelet::Nodelet);

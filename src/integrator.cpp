@@ -18,7 +18,7 @@
 
 //}
 
-namespace utils
+namespace rospix_utils
 {
 
 namespace integrator
@@ -311,7 +311,7 @@ void Integrator::plotClusters() {
 
 }  // namespace integrator
 
-}  // namespace utils
+}  // namespace rospix_utils
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS(utils::integrator::Integrator, nodelet::Nodelet);
+PLUGINLIB_EXPORT_CLASS(rospix_utils::integrator::Integrator, nodelet::Nodelet);
