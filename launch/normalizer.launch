@@ -13,7 +13,7 @@
   <arg unless="$(arg standalone)" name="nodelet_manager" value="$(arg manager)"/>
   <arg     if="$(arg standalone)" name="nodelet_manager" value=""/>
 
-  <node name="$(arg node_name)" pkg="nodelet" type="nodelet" args="$(arg nodelet) utils/Normalizer $(arg nodelet_manager)" output="screen">
+  <node name="$(arg node_name)" pkg="nodelet" type="nodelet" args="$(arg nodelet) rospix_utils/Normalizer $(arg nodelet_manager)" output="screen">
 
     <rosparam file="$(find rospix_utils)/config/normalizer.yaml" />
 

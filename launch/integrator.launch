@@ -4,7 +4,7 @@
 
   <arg name="node_name" default="integrator" />
 
-  <arg name="topic_cluster_list" default="compton_camera/cluster_list" />
+  <arg name="topic_cluster_list" default="rospix3/cluster_list" />
 
   <arg name="debug" default="false" />
   <arg unless="$(arg debug)" name="launch_prefix_debug" value=""/>
@@ -17,7 +17,7 @@
   <arg unless="$(arg standalone)" name="nodelet_manager" value="$(arg manager)"/>
   <arg     if="$(arg standalone)" name="nodelet_manager" value=""/>
 
-  <node name="$(arg node_name)" pkg="nodelet" type="nodelet" args="$(arg nodelet) utils/Integrator $(arg nodelet_manager)" output="screen" launch-prefix="$(arg launch_prefix_debug)">
+  <node name="$(arg node_name)" pkg="nodelet" type="nodelet" args="$(arg nodelet) rospix_utils/Integrator $(arg nodelet_manager)" output="screen" launch-prefix="$(arg launch_prefix_debug)">
 
     <rosparam file="$(find rospix_utils)/config/integrator.yaml" />
 
