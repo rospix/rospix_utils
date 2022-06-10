@@ -40,7 +40,7 @@ private:
   double _material_density_;
   double _detector_thickness_;
 
-  bool _filter_enabled_;
+  bool   _filter_enabled_;
   double _filter_k_;
 
   double detector_mass_;
@@ -76,10 +76,11 @@ private:
 
 void Dosimeter::onInit() {
 
-  ros::NodeHandle nh("~");
+  ros::NodeHandle nh = nodelet::Nodelet::getMTPrivateNodeHandle();
+  ros::Time::waitForValid();
 
   // | ------------------- load ros parameters ------------------ |
-  mrs_lib::ParamLoader param_loader(nh, "Dosimeter");
+  mrs_lib::ParamLoader param_loader(nh, ros::this_node::getName());
 
   param_loader.loadParam("publisher_rate", _publisher_rate_);
 
@@ -191,7 +192,7 @@ void Dosimeter::timerPublish([[maybe_unused]] const ros::TimerEvent& te) {
   ROS_INFO_THROTTLE(1.0, "[Dosimeter]: %f [uGy/min]", total_dose);
 
   // -> mGy per year
-  total_dose_mgy = 60*60*24*365 * total_dose_mgy;
+  total_dose_mgy = 60 * 60 * 24 * 365 * total_dose_mgy;
   ROS_INFO_THROTTLE(1.0, "[Dosimeter]: %f [mGy/year]", total_dose_mgy);
 
   if (_filter_enabled_) {

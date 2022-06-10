@@ -1,24 +1,33 @@
 <launch>
 
+  <arg name="UAV_NAME" default="$(env UAV_NAME)" />
+
   <arg name="debug" default="false" />
+  <arg name="standalone" default="true" />
+  <arg name="nodelet_manager_name" default="manager_name" />
+  <arg name="name_suffix" default="" />
+  <arg name="cluster_list_topic" default="compton_camera/cluster_list" />
+
   <arg unless="$(arg debug)" name="launch_prefix_debug" value=""/>
   <arg     if="$(arg debug)" name="launch_prefix_debug" value="debug_roslaunch"/>
 
-  <arg name="standalone" default="true" />
-  <arg name="manager" default="manager_name" />
   <arg unless="$(arg standalone)" name="nodelet" value="load"/>
   <arg     if="$(arg standalone)" name="nodelet" value="standalone"/>
-  <arg unless="$(arg standalone)" name="nodelet_manager" value="$(arg manager)"/>
+  <arg unless="$(arg standalone)" name="nodelet_manager" value="$(arg nodelet_manager_name)"/>
   <arg     if="$(arg standalone)" name="nodelet_manager" value=""/>
 
-  <node name="dosimeter" pkg="nodelet" type="nodelet" args="$(arg nodelet) rospix_utils/Dosimeter $(arg nodelet_manager)" output="screen" launch-prefix="$(arg launch_prefix_debug)">
+  <group ns="$(arg UAV_NAME)">
 
-    <rosparam file="$(find rospix_utils)/config/dosimeter.yaml" />
+    <node name="dosimeter$(arg name_suffix)" pkg="nodelet" type="nodelet" args="$(arg nodelet) rospix_utils/Dosimeter $(arg nodelet_manager)" output="screen" launch-prefix="$(arg launch_prefix_debug)">
+      
+      <rosparam file="$(find rospix_utils)/config/dosimeter.yaml" />
+      
+      <remap from="~cluster_list_in" to="$(arg cluster_list_topic)" />
+      
+      <remap from="~dose_out" to="~dose" />
 
-    <remap from="~cluster_list_in" to="/uav1/compton_camera/cluster_list" />
+    </node>
 
-    <remap from="~dose_out" to="~dose" />
-
-  </node>
+  </group>
 
 </launch>
