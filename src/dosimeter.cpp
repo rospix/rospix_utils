@@ -46,7 +46,10 @@ private:
   double detector_mass_;
 
   ros::Subscriber subscriber_cluster_list_;
-  ros::Publisher  publisher_dose_;
+
+  ros::Publisher publisher_energy_jkg_;
+  ros::Publisher publisher_dose_ugs_;
+  ros::Publisher publisher_dose_mgy_;
 
   double filtered_output_ = 0;
 
@@ -103,7 +106,9 @@ void Dosimeter::onInit() {
 
   // | ----------------------- publishers ----------------------- |
 
-  publisher_dose_ = nh.advertise<std_msgs::Float64>("dose_out", 1);
+  publisher_energy_jkg_ = nh.advertise<std_msgs::Float64>("energy_jkg_out", 1);
+  publisher_dose_ugs_   = nh.advertise<std_msgs::Float64>("dose_ugs_out", 1);
+  publisher_dose_mgy_   = nh.advertise<std_msgs::Float64>("dose_out", 1);
 
   // | ---------------------- subscribers  ---------------------- |
 
@@ -175,6 +180,9 @@ void Dosimeter::timerPublish([[maybe_unused]] const ros::TimerEvent& te) {
   total_dose = total_dose / detector_mass_;
   ROS_INFO_THROTTLE(1.0, "[Dosimeter]: %f [J/kg]", total_dose);
 
+  std_msgs::Float64 msg_jkg;
+  msg_jkg.data = filtered_output_;
+
   // -> Gy per second
   total_dose = total_dose / _time_window_;
   ROS_INFO_THROTTLE(1.0, "[Dosimeter]: %f [Gy/s]", total_dose);
@@ -186,6 +194,9 @@ void Dosimeter::timerPublish([[maybe_unused]] const ros::TimerEvent& te) {
   // -> uGy per second
   total_dose = total_dose * 1e6;
   ROS_INFO_THROTTLE(1.0, "[Dosimeter]: %f [uGy/s]", total_dose);
+
+  std_msgs::Float64 msg_ugs;
+  msg_ugs.data = total_dose;
 
   // -> uGy per minute
   total_dose = 60.0 * total_dose;
@@ -201,10 +212,12 @@ void Dosimeter::timerPublish([[maybe_unused]] const ros::TimerEvent& te) {
     filtered_output_ = total_dose_mgy;
   }
 
-  std_msgs::Float64 msg;
-  msg.data = filtered_output_;
+  std_msgs::Float64 msg_mgy;
+  msg_mgy.data = filtered_output_;
 
-  publisher_dose_.publish(msg);
+  publisher_energy_jkg_.publish(msg_jkg);
+  publisher_dose_ugs_.publish(msg_ugs);
+  publisher_dose_mgy_.publish(msg_mgy);
 }
 
 //}

@@ -24,6 +24,8 @@
       
       <remap from="~cluster_list_in" to="$(arg cluster_list_topic)" />
       
+      <remap from="~energy_jkg_out" to="~eneregy_joule_per_kilogram" />
+      <remap from="~dose_ugs_out" to="~dose_ugy_per_second" />
       <remap from="~dose_out" to="~dose" />
 
     </node>
