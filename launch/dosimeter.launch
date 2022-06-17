@@ -24,7 +24,7 @@
       
       <remap from="~cluster_list_in" to="$(arg cluster_list_topic)" />
       
-      <remap from="~dose_ugy_s_out" to="~dose_ugy_s" />
+      <remap from="~dose_ngy_s_out" to="~dose_ngy_s" />
       <remap from="~dose_out" to="~dose" />
 
     </node>

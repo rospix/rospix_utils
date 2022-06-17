@@ -1,6 +1,6 @@
-publisher_rate: 60.0 # [Hz]
+publisher_rate: 1.0 # [Hz]
 
-time_window: 5.0 # [s]
+time_window: 3.0 # [s]
 
 filter:
   enabled: true

@@ -47,7 +47,7 @@ private:
 
   ros::Subscriber subscriber_cluster_list_;
 
-  ros::Publisher publisher_dose_ugy_s_;
+  ros::Publisher publisher_dose_ngy_s_;
   ros::Publisher publisher_dose_mgy_y_;
 
   double filtered_output_ = 0;
@@ -105,8 +105,8 @@ void Dosimeter::onInit() {
 
   // | ----------------------- publishers ----------------------- |
 
-  publisher_dose_ugy_s_   = nh.advertise<std_msgs::Float64>("dose_ugy_s_out", 1);
-  publisher_dose_mgy_y_   = nh.advertise<std_msgs::Float64>("dose_out", 1);
+  publisher_dose_ngy_s_ = nh.advertise<std_msgs::Float64>("dose_ngy_s_out", 1);
+  publisher_dose_mgy_y_ = nh.advertise<std_msgs::Float64>("dose_out", 1);
 
   // | ---------------------- subscribers  ---------------------- |
 
@@ -186,13 +186,13 @@ void Dosimeter::timerPublish([[maybe_unused]] const ros::TimerEvent& te) {
   double total_dose_mgy_s = total_dose * 1000.0;
   ROS_INFO_THROTTLE(1.0, "[Dosimeter]: %f [mGy/s]", total_dose);
 
-  // -> uGy per second
-  double total_dose_ugy_s = total_dose * 1e6;
-  ROS_INFO_THROTTLE(1.0, "[Dosimeter]: %f [uGy/s]", total_dose_ugy_s);
+  // -> nGy per second
+  double total_dose_ngy_s = total_dose * 1e9;
+  ROS_INFO_THROTTLE(1.0, "[Dosimeter]: %f [nGy/s]", total_dose_ngy_s);
 
-  // -> uGy per minute
-  total_dose = 60.0 * total_dose_ugy_s;
-  ROS_INFO_THROTTLE(1.0, "[Dosimeter]: %f [uGy/min]", total_dose);
+  // -> nGy per minute
+  total_dose = 60.0 * total_dose_ngy_s;
+  ROS_INFO_THROTTLE(1.0, "[Dosimeter]: %f [nGy/min]", total_dose);
 
   // -> mGy per year
   double total_dose_mgy_y = 60 * 60 * 24 * 365 * total_dose_mgy_s;
@@ -207,10 +207,10 @@ void Dosimeter::timerPublish([[maybe_unused]] const ros::TimerEvent& te) {
   std_msgs::Float64 msg_mgy_y;
   msg_mgy_y.data = filtered_output_;
 
-  std_msgs::Float64 msg_ugy_s;
-  msg_ugy_s.data = total_dose_ugy_s;
+  std_msgs::Float64 msg_ngy_s;
+  msg_ngy_s.data = total_dose_ngy_s;
 
-    publisher_dose_ugy_s_.publish(msg_ugy_s);
+  publisher_dose_ngy_s_.publish(msg_ngy_s);
   publisher_dose_mgy_y_.publish(msg_mgy_y);
 }
 
