@@ -6,7 +6,7 @@
   <arg name="standalone" default="true" />
   <arg name="nodelet_manager_name" default="manager_name" />
   <arg name="name_suffix" default="" />
-  <arg name="cluster_list_topic" default="compton_camera/cluster_list" />
+  <arg name="cluster_list_topic" default="rospix3/cluster_list" />
 
   <arg unless="$(arg debug)" name="launch_prefix_debug" value=""/>
   <arg     if="$(arg debug)" name="launch_prefix_debug" value="debug_roslaunch"/>
